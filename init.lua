@@ -84,13 +84,13 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
-require 'custom.init'
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+
+require 'custom.init'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
@@ -609,14 +609,17 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
-        glsl_analyzer = {
-          settings = {
-            format_on_save = false,
-          },
+        pyright = {},
+        rust_analyzer = {},
+        glsl_analyzer = {},
+        -- coq_lsp = {},
+        ruff = {
+          on_attach = function(client)
+            client.server_capabilities.hoverProvider = false
+          end,
         },
-        coq_lsp = {},
+        tailwindcss = {},
+        -- jedi_language_server = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -640,6 +643,7 @@ require('lazy').setup({
             },
           },
         },
+        volar = { 'vue' },
       }
 
       -- Ensure the servers and tools above are installed
@@ -707,12 +711,13 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        glsl = { 'prettier', 'prettier', stop_after_first = true },
+        glsl = { 'prettierd', 'prettier', stop_after_first = true },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        rust = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -910,6 +915,18 @@ require('lazy').setup({
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
+    config = function(_, _)
+      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
+      parser_config.lbnf = {
+        install_info = {
+          url = 'https://github.com/MortenSchou/tree-sitter-lbnf.git', -- local path or git repo
+          files = { 'src/parser.c' }, -- note that some parsers also require src/scanner.c or src/scanner.cc
+          -- optional entries:
+          requires_generate_from_grammar = false, -- if folder contains pre-generated src/parser.c
+        },
+        filetype = 'cf', -- if filetype does not match the parser name
+      }
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
